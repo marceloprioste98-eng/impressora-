@@ -1,0 +1,187 @@
+import com.sun.jna.Library;
+import com.sun.jna.Native;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.io.IOException;
+import java.util.Scanner;
+
+public class Main {
+
+    // Interface da DLL
+    public interface ImpressoraDLL extends Library {
+        ImpressoraDLL INSTANCE = (ImpressoraDLL) Native.load(
+                "C:/Users/SEU-USUARIO/Desktop/PROJETO JAVA/E1_Impressora01.dll", ImpressoraDLL.class);
+
+        int AbreConexaoImpressora(int tipo, String modelo, String conexao, int param);
+        int FechaConexaoImpressora();
+        int ImpressaoTexto(String dados, int posicao, int estilo, int tamanho);
+        int Corte(int avanco);
+        int ImpressaoQRCode(String dados, int tamanho, int nivelCorrecao);
+        int ImpressaoCodigoBarras(int tipo, String dados, int altura, int largura, int HRI);
+        int AvancaPapel(int linhas);
+        int StatusImpressora(int param);
+        int AbreGavetaElgin();
+        int AbreGaveta(int pino, int ti, int tf);
+        int SinalSonoro(int qtd, int tempoInicio, int tempoFim);
+        int ImprimeXMLSAT(String dados, int param);
+        int ImprimeXMLCancelamentoSAT(String dados, String assQRCode, int param);
+    }
+
+    private static boolean conexaoAberta = false;
+    private static final Scanner scanner = new Scanner(System.in);
+
+    public static void abrirConexao() {
+        if (!conexaoAberta) {
+            int retorno = ImpressoraDLL.INSTANCE.AbreConexaoImpressora(1, "i9", "USB", 0);
+            if (retorno == 0) {
+                conexaoAberta = true;
+                System.out.println("Conexão aberta com sucesso.");
+            } else {
+                System.out.println("Erro ao abrir conexão. Código de erro: " + retorno);
+            }
+        } else {
+            System.out.println("Conexão já está aberta.");
+        }
+    }
+
+    public static void fecharConexao() {
+        if (conexaoAberta) {
+            ImpressoraDLL.INSTANCE.FechaConexaoImpressora();
+            conexaoAberta = false;
+            System.out.println("Conexão fechada.");
+        } else {
+            System.out.println("Nenhuma conexão aberta para fechar.");
+        }
+    }
+
+    public static void impressaoTexto() {
+        if (conexaoAberta) {
+            int retorno = ImpressoraDLL.INSTANCE.ImpressaoTexto("Ola", 1, 4, 0);
+            ImpressoraDLL.INSTANCE.Corte(5);
+            System.out.println("Texto impresso com sucesso. Código de retorno: " + retorno);
+        } else {
+            System.out.println("Erro: Conexão não está aberta.");
+        }
+    }
+
+    int Corte = ImpressoraDLL.INSTANCE.Corte(5); // Avanco de 5 (pode ajustar conforme necessidade)
+
+
+    public static void impressaoQRCode() {
+        if (conexaoAberta) {
+            int retorno = ImpressoraDLL.INSTANCE.ImpressaoQRCode("Ola", 6, 4);
+            ImpressoraDLL.INSTANCE.Corte(5);
+            System.out.println("QRCode impresso com sucesso. Código de retorno: " + retorno);
+        } else {
+            System.out.println("Erro: Conexão não está aberta.");
+        }
+    }
+
+    public static void impressaoCodigoBarras() {
+        if (conexaoAberta) {
+            int retorno = ImpressoraDLL.INSTANCE.ImpressaoCodigoBarras(8, "{A012345678912", 100, 2, 3);
+            ImpressoraDLL.INSTANCE.Corte(5);
+            System.out.println("Código de barras impresso com sucesso. Código de retorno: " + retorno);
+        } else {
+            System.out.println("Erro: Conexão não está aberta.");
+        }
+    }
+
+    public static void imprimeXMLSAT() {
+        if (conexaoAberta) {
+
+            String xml = "path=C:/Users/SEU-USUARIO/Desktop/PROJETO JAVA/XMLSAT.xml";
+
+            int retorno = ImpressoraDLL.INSTANCE.ImprimeXMLSAT(xml, 0);
+
+            System.out.println("XML SAT impresso com sucesso. Código de retorno: " + retorno);
+        } else {
+            System.out.println("Erro: Conexão não está aberta.");
+        }
+
+        int Corte = ImpressoraDLL.INSTANCE.Corte(5); // Avanco de 5 (pode ajustar conforme necessidade)
+
+    }
+
+
+    public static void imprimeXMLCancelamentoSAT() {
+        if (conexaoAberta) {
+            String xmlCancelamento = "path=C:/Users/SEU-USUARIO/Desktop/PROJETO JAVA/CANC_SAT.xml";
+            String assQRCode = "Q5DLkpdRijIRGY6YSSNsTWK1TztHL1vD0V1Jc4spo/CEUqICEb9SFy82ym8EhBRZjbh3btsZhF+sjHqEMR159i4agru9x6KsepK/q0E2e5xlU5cv3m1woYfgHyOkWDNcSdMsS6bBh2Bpq6s89yJ9Q6qh/J8YHi306ce9Tqb/drKvN2XdE5noRSS32TAWuaQEVd7u+TrvXlOQsE3fHR1D5f1saUwQLPSdIv01NF6Ny7jZwjCwv1uNDgGZONJdlTJ6p0ccqnZvuE70aHOI09elpjEO6Cd+orI7XHHrFCwhFhAcbalc+ZfO5b/+vkyAHS6CYVFCDtYR9Hi5qgdk31v23w==";
+            int retorno = ImpressoraDLL.INSTANCE.ImprimeXMLCancelamentoSAT(xmlCancelamento, assQRCode, 0);
+            System.out.println("XML de cancelamento SAT impresso com sucesso. Código de retorno: " + retorno);
+        } else {
+            System.out.println("Erro: Conexão não está aberta.");
+        }
+        int Corte = ImpressoraDLL.INSTANCE.Corte(5); // Avanco de 5 (pode ajustar conforme necessidade)
+
+    }
+
+    public static void abreGavetaElgin() {
+        if (conexaoAberta) {
+            int retorno = ImpressoraDLL.INSTANCE.AbreGavetaElgin();
+            System.out.println("Gaveta Elgin aberta com sucesso. Código de retorno: " + retorno);
+        } else {
+            System.out.println("Erro: Conexão não está aberta.");
+        }
+    }
+
+    public static void abreGaveta() {
+        if (conexaoAberta) {
+            int retorno = ImpressoraDLL.INSTANCE.AbreGaveta(0, 50, 100);
+            System.out.println("Gaveta aberta com sucesso. Código de retorno: " + retorno);
+        } else {
+            System.out.println("Erro: Conexão não está aberta.");
+        }
+    }
+
+    public static void sinalSonoro() {
+        if (conexaoAberta) {
+            int retorno = ImpressoraDLL.INSTANCE.SinalSonoro(4, 50, 5);
+            System.out.println("Sinal sonoro emitido com sucesso. Código de retorno: " + retorno);
+        } else {
+            System.out.println("Erro: Conexão não está aberta.");
+        }
+    }
+
+    public static void exibirMenu() {
+        System.out.println("\n************** MENU IMPRESSORA **************");
+        System.out.println("1  - Abrir Conexão");
+        System.out.println("2  - Fechar Conexão");
+        System.out.println("3  - Impressão Texto");
+        System.out.println("4  - Impressão QRCode");
+        System.out.println("5  - Impressão Código Barras");
+        System.out.println("6  - Impressão XML SAT");
+        System.out.println("7  - Impressão XML Cancelamento SAT");
+        System.out.println("8  - Abrir Gaveta Elgin");
+        System.out.println("9  - Abrir Gaveta");
+        System.out.println("10 - Sinal Sonoro");
+        System.out.println("0  - Sair");
+    }
+
+    public static void main(String[] args) {
+        while (true) {
+            exibirMenu();
+            String escolha = scanner.nextLine();
+
+            switch (escolha) {
+                case "1" -> abrirConexao();
+                case "2" -> fecharConexao();
+                case "3" -> impressaoTexto();
+                case "4" -> impressaoQRCode();
+                case "5" -> impressaoCodigoBarras();
+                case "6" -> imprimeXMLSAT();
+                case "7" -> imprimeXMLCancelamentoSAT();
+                case "8" -> abreGavetaElgin();
+                case "9" -> abreGaveta();
+                case "10" -> sinalSonoro();
+                case "0" -> {
+                    if (conexaoAberta) fecharConexao();
+                    System.out.println("Programa encerrado.");
+                    return;
+                }
+                default -> System.out.println("Opção inválida. Tente novamente.");
+            }
+        }
+    }
+}
